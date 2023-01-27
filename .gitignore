@@ -1,0 +1,6 @@
+.vscode
+.DS_Store
+bin/*
+build/*
+logs/
+config.yaml
