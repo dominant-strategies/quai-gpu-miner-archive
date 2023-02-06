@@ -1,3 +1,11 @@
+# Connection details for proxy
+Proxy:  True
+ProxyURL: "127.0.0.1:8008"
+RewardAddress:  "0x0000000000000000000000000000000000000001"
+Password: "password"
+
+# Connection details for solo mining
+Location: [0,0]
 PrimeURL: "ws://127.0.0.1:8547"
 RegionURLs: ["ws://127.0.0.1:8579", "ws://127.0.0.1:8581", "ws://127.0.0.1:8583"]
 ZoneURLs: [["ws://127.0.0.1:8611", "ws://127.0.0.1:8643", "ws://127.0.0.1:8675"], ["ws://127.0.0.1:8613", "ws://127.0.0.1:8645", "ws://127.0.0.1:8677"], ["ws://127.0.0.1:8615", "ws://127.0.0.1:8647", "ws://127.0.0.1:8679"] ]
