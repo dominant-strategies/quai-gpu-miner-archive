@@ -7,11 +7,29 @@ GO ?= latest
 GORUN = env GO111MODULE=on go run
 
 quai-cpu-miner:
-	go build -o ./build/bin/quai-cpu-miner main.go  
+	go build -o ./build/bin/quai-cpu-miner main.go
 	@echo "Done building."
-	@echo "Run \"$(GOBIN)\" to launch quai-cpu-miner"	
+	@echo "Run \"$(GOBIN)\" to launch quai-cpu-miner"
 
 # to manually select a location to mine
 run-mine:
 	./build/bin/quai-cpu-miner $(region) $(zone)
 
+# to run in the background (manually set location)
+run-mine-background:
+ifeq (,$(wildcard logs))
+	mkdir logs
+endif
+	@nohup ./build/bin/quai-cpu-miner $(region) $(zone) 1 >> logs/slice-$(region)-$(zone).log 2>&1 &
+
+stop:
+ifeq ($(shell uname -s),Darwin)
+	@if pgrep quai-cpu-miner; then pkill -f ./build/bin/quai-cpu-miner; fi
+	@while pgrep quai-cpu-miner >/dev/null; do \
+		echo "Stopping all Quai Network CPU Miners, please wait until terminated."; \
+		sleep 3; \
+	done;
+else
+	@echo "Stopping all Quai Network CPU Miners, please wait until terminated.";
+	@if pgrep quai-cpu-miner; then killall -w ./build/bin/quai-cpu-miner; fi
+endif
