@@ -9,6 +9,10 @@ import (
 
 // Config holds the configuration parameters for quai-manager
 type Config struct {
+	RewardAddress string
+	Password      string
+	Proxy         bool
+	ProxyURL      string
 	PrimeURL      string
 	RegionURLs    []string
 	ZoneURLs      [][]string
