@@ -267,14 +267,14 @@ func (m *Miner) resultLoop() error {
 			// Send to whichever nodes should be aware of this block
 			var wg sync.WaitGroup
 			defer wg.Wait()
-			if order <= common.PRIME_CTX {
-				go m.sendMinedHeader(common.PRIME_CTX, header, &wg)
+			if order <= common.ZONE_CTX {
+				go m.sendMinedHeader(common.ZONE_CTX, header, &wg)
 			}
 			if order <= common.REGION_CTX {
 				go m.sendMinedHeader(common.REGION_CTX, header, &wg)
 			}
-			if order <= common.ZONE_CTX {
-				go m.sendMinedHeader(common.ZONE_CTX, header, &wg)
+			if order <= common.PRIME_CTX {
+				go m.sendMinedHeader(common.PRIME_CTX, header, &wg)
 			}
 			m.updateCh <- m.header
 		}
