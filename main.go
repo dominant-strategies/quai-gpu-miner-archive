@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/TwiN/go-color"
@@ -265,16 +264,14 @@ func (m *Miner) resultLoop() error {
 				log.Println(color.Ize(color.Blue, "ZONE block  : "), header.NumberArray(), header.Hash())
 			}
 			// Send to whichever nodes should be aware of this block
-			var wg sync.WaitGroup
-			defer wg.Wait()
 			if order <= common.ZONE_CTX {
-				go m.sendMinedHeader(common.ZONE_CTX, header, &wg)
+				m.sendMinedHeader(common.ZONE_CTX, header)
 			}
 			if order <= common.REGION_CTX {
-				go m.sendMinedHeader(common.REGION_CTX, header, &wg)
+				m.sendMinedHeader(common.REGION_CTX, header)
 			}
 			if order <= common.PRIME_CTX {
-				go m.sendMinedHeader(common.PRIME_CTX, header, &wg)
+				m.sendMinedHeader(common.PRIME_CTX, header)
 			}
 			m.updateCh <- m.header
 		}
@@ -283,13 +280,11 @@ func (m *Miner) resultLoop() error {
 }
 
 // SendMinedHeader sends the mined block to its mining client with the transactions, uncles, and receipts.
-func (m *Miner) sendMinedHeader(ctx int, header *types.Header, wg *sync.WaitGroup) {
-	wg.Add(1)
+func (m *Miner) sendMinedHeader(ctx int, header *types.Header) {
 	err := m.client(ctx).ReceiveMinedHeader(context.Background(), header)
 	if err != nil {
 		fmt.Println("error submitting block: ", err)
 	}
-	defer wg.Done()
 }
 
 var (
