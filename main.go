@@ -123,6 +123,10 @@ func connectToSlice(config util.Config) SliceClients {
 	return clients
 }
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
 func main() {
 	// Load config
 	config, err := util.LoadConfig("..")
