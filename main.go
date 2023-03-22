@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
-	"math/big"
 
 	"os"
 	"strconv"
@@ -17,7 +15,6 @@ import (
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/dominant-strategies/go-quai/consensus/blake3pow"
 	"github.com/dominant-strategies/go-quai/core/types"
-	"github.com/dominant-strategies/go-quai/quaiclient"
 	"github.com/dominant-strategies/go-quai/quaiclient/ethclient"
 
 	"github.com/dominant-strategies/quai-cpu-miner/util"
@@ -276,7 +273,7 @@ func (m *Miner) miningLoop() error {
 				} else if number[common.ZONE_CTX] != m.previousNumber[common.ZONE_CTX] {
 					zoneStr = color.Ize(color.Blue, zoneStr)
 				}
-				log.Println("Mining Block: ", fmt.Sprintf("[%s %s %s]", primeStr, regionStr, zoneStr), "location", header.Location(), "difficulty", header.DifficultyArray())
+				log.Println("Mining Block: ", fmt.Sprintf("[%s %s %s]", primeStr, regionStr, zoneStr), "location", header.Location(), "difficulty", header.Difficulty())
 			}
 			m.previousNumber = [common.HierarchyDepth]uint64{header.NumberU64(common.PRIME_CTX), header.NumberU64(common.REGION_CTX), header.NumberU64(common.ZONE_CTX)}
 			header.SetTime(uint64(time.Now().Unix()))
@@ -330,11 +327,10 @@ func (m *Miner) resultLoop() {
 	for {
 		select {
 		case header := <-m.resultCh:
-			order, err := m.GetDifficultyOrder(header)
+			order, err := header.CalcOrder()
 			if err != nil {
-				// Ignore this block and go back to waiting for another one.
-				log.Println("Block mined has an invalid order")
-				continue
+				log.Println("Mined block had invalid order")
+				return
 			}
 			if !m.config.Proxy {
 				for i := common.HierarchyDepth - 1; i >= order; i-- {
@@ -365,7 +361,7 @@ func (m *Miner) resultLoop() {
 func (m *Miner) sendMinedHeaderProxy(header *types.Header) error {
 	retryDelay := 1 // Start retry at 1 second
 	for {
-		header_req, err := jsonrpc.MakeRequest(int(m.incrementLatestID()), "quai_receiveMinedHeader", quaiclient.RPCMarshalHeader(header))
+		header_req, err := jsonrpc.MakeRequest(int(m.incrementLatestID()), "quai_receiveMinedHeader", header.RPCMarshalHeader())
 		if err != nil {
 			log.Fatalf("Could not create json message with header: %v", err)
 			return err
@@ -390,27 +386,6 @@ func (m *Miner) sendMinedHeaderProxy(header *types.Header) error {
 // Sends the mined header to its mining client.
 func (m *Miner) sendMinedHeaderNodes(order int, header *types.Header) error {
 	return m.sliceClients[order].ReceiveMinedHeader(context.Background(), header)
-}
-
-var (
-	big2e256 = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), big.NewInt(0)) // 2^256
-)
-
-// This function determines the difficulty order of a block.
-func (m *Miner) GetDifficultyOrder(header *types.Header) (int, error) {
-	if header == nil {
-		return common.HierarchyDepth, errors.New("no header provided")
-	}
-	blockhash := header.Hash()
-	for i, difficulty := range header.DifficultyArray() {
-		if difficulty != nil && big.NewInt(0).Cmp(difficulty) < 0 {
-			target := new(big.Int).Div(big2e256, difficulty)
-			if new(big.Int).SetBytes(blockhash.Bytes()).Cmp(target) <= 0 {
-				return i, nil
-			}
-		}
-	}
-	return -1, errors.New("block does not satisfy minimum difficulty")
 }
 
 // Used for sequencing JSON RPC messages.
