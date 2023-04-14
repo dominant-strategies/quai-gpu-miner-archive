@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230210163729-fc6ca4235802
 	github.com/TwiN/go-color v1.4.0
-	github.com/dominant-strategies/go-quai v0.6.0-pre.4.0.20230418213648-8fca3b0e5c9d
+	github.com/dominant-strategies/go-quai v0.6.0-pre.4.0.20230427193825-0b74695deb02
 	github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55
 	github.com/spf13/viper v1.14.0
 )
@@ -17,7 +17,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/go-ole/go-ole v1.2.1 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
