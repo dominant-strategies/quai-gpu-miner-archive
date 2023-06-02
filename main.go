@@ -128,7 +128,8 @@ func main() {
 	// Load config
 	config, err := util.LoadConfig("..")
 	if err != nil {
-		log.Fatal("cannot load config:", err)
+		log.Print("Could not load config: ", err)
+		return
 	}
 	// Parse mining location from args
 	if len(os.Args) > 2 {

@@ -1,8 +1,6 @@
 package util
 
 import (
-	"fmt"
-
 	"github.com/dominant-strategies/go-quai/common"
 	"github.com/spf13/viper"
 )
@@ -28,9 +26,9 @@ func LoadConfig(path string) (config Config, err error) {
 	err = viper.ReadInConfig()    // Find and read the config file
 
 	if err != nil { // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+		return config, err
 	}
 
 	err = viper.Unmarshal(&config)
-	return
+	return config, err
 }

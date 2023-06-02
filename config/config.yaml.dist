@@ -1,5 +1,5 @@
 # Connection details for proxy
-Proxy:  True
+Proxy:  False
 ProxyURL: "127.0.0.1:8008"
 RewardAddress:  "0x0000000000000000000000000000000000000001"
 Password: "password"
