@@ -84,8 +84,8 @@ github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea/go.mod h1:93vs
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/dominant-strategies/bn256 v0.0.0-20220930122411-fbf930a7493d h1:hkL13khTTS48QfWmjRFWpuzhOqu6S0cjpJOzPoBEDb4=
 github.com/dominant-strategies/bn256 v0.0.0-20220930122411-fbf930a7493d/go.mod h1:nvtPJPChairu4o4iX2XGrstOFpLaAgNYhrUCl5bSng4=
-github.com/dominant-strategies/go-quai v0.10.0-pre.0 h1:m7mCF9b0IBcZBYCHfTP38zgxfiX2uOxT+zKvnip6OUA=
-github.com/dominant-strategies/go-quai v0.10.0-pre.0/go.mod h1:r4QarI0vb0/MvUHLKRasN74f6k/Patu9UzDyQT5a/e4=
+github.com/dominant-strategies/go-quai v0.10.0-rc.0 h1:4WAAbwMe9ViE1TTYNwDkqg/kRVd7uysHtxiFm61yDoo=
+github.com/dominant-strategies/go-quai v0.10.0-rc.0/go.mod h1:r4QarI0vb0/MvUHLKRasN74f6k/Patu9UzDyQT5a/e4=
 github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55 h1:TDyOiTSueb5XoQhGFK57dZZkEsQGpzGhk7ppSC9YIV0=
 github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55/go.mod h1:MYwAEiEynMvuQeEIJaxL0rn9tJ7xKg6XCr4cQ0i3TFo=
 github.com/edsrzf/mmap-go v1.1.0 h1:6EUwBLQ/Mcr1EYLE4Tn1VdW1A4ckqCQWZBw8Hr0kjpQ=
