@@ -40,6 +40,7 @@ else()
 	endif()
 	if(NOT CUDA_VERSION VERSION_LESS 10.0)
 		list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_75,code=sm_75")
+		list(APPEND CUDA_NVCC_FLAGS "-gencode arch=compute_86,code=sm_86")
 	endif()
 endif()
 
