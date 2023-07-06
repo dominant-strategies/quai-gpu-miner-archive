@@ -300,7 +300,7 @@ struct TelemetryType
 
             // Eventually push also solutions per single GPU
             if (g_logOptions & LOG_PER_GPU)
-                _ret << " " << EthTeal << miner.solutions.str() << EthReset;
+                _ret << " solutions " << EthTeal << miner.solutions.str() << EthReset;
 
             // Separator if not the last miner index
             if (i < m)

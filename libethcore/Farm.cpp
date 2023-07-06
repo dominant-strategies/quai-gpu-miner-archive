@@ -488,11 +488,14 @@ void Farm::submitProofAsync(Solution const& _s)
         Result r = EthashAux::eval(_s.work.epoch, _s.work.block, _s.work.header, _s.nonce);
         if (r.value > _s.work.boundary)
         {
+            cwarn << "value greater than boundary";
             accountSolution(_s.midx, SolutionAccountingEnum::Failed);
             cwarn << "GPU " << _s.midx
                   << " gave incorrect result. Lower overclocking values if it happens frequently.";
             return;
         }
+        cwarn << "Boundary :  " << _s.work.boundary;
+        cwarn << "GPU result: " << r.value;
         if (dbuild && (_s.mixHash != r.mixHash))
             cwarn << "GPU " << _s.midx << " mix missmatch";
         m_onSolutionFound(Solution{_s.nonce, r.mixHash, _s.work, _s.tstamp, _s.midx});
