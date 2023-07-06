@@ -575,6 +575,14 @@ void CUDAMiner::search(
                     Farm::f().submitProof(Solution{
                         nonce, mixHashes[i], w, std::chrono::steady_clock::now(), m_index});
 
+                    cudalog << "Found result";
+                    cudalog << "nonce : " << toHex(nonce);
+                    cudalog << "mixhash : " << mixHashes[i];
+                    cudalog << "boundary : " << w.boundary;
+                    cudalog << "sealhash : " << w.header;
+                    cudalog << "epoch : " << w.epoch;
+                    cudalog << "seed : " << w.seed;
+                    cudalog << "block : " << w.block;
                     cudalog << EthWhite << "Job: " << w.header.abridged() << " Sol: 0x"
                             << toHex(nonce) << EthReset;
                 }

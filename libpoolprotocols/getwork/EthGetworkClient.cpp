@@ -25,7 +25,7 @@ EthGetworkClient::EthGetworkClient(int worktimeout, unsigned farmRecheckPeriod)
     Json::Value jGetWork;
     jGetWork["id"] = unsigned(1);
     jGetWork["jsonrpc"] = "2.0";
-    jGetWork["method"] = "eth_getWork";
+    jGetWork["method"] = "quai_getWork";
     jGetWork["params"] = Json::Value(Json::arrayValue);
     m_jsonGetWork = std::string(Json::writeString(m_jSwBuilder, jGetWork));
 }
@@ -548,7 +548,7 @@ void EthGetworkClient::submitSolution(const Solution& solution)
         jReq["id"] = id;
         jReq["jsonrpc"] = "2.0";
         m_solution_submitted_max_id = max(m_solution_submitted_max_id, id);
-        jReq["method"] = "eth_submitWork";
+        jReq["method"] = "quai_submitWork";
         jReq["params"] = Json::Value(Json::arrayValue);
         jReq["params"].append("0x" + nonceHex);
         jReq["params"].append("0x" + solution.work.header.hex());
