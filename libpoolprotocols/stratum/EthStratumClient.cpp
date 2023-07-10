@@ -1628,6 +1628,7 @@ void EthStratumClient::submitSolution(const Solution& solution)
         jReq["params"].append(
             toHex(solution.nonce, HexPrefix::DontAdd).substr(solution.work.exSizeBytes));
         jReq["params"].append(m_session->workerId);
+        jReq["params"].append(solution.mixHash.hex(HexPrefix::Add));
         break;        
     }
 
