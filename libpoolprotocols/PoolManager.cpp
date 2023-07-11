@@ -39,6 +39,7 @@ PoolManager::PoolManager(PoolSettings _settings)
         if (p_client && p_client->isConnected())
         {
             p_client->submitSolution(sol);
+            // cnote << 
         }
         else
         {

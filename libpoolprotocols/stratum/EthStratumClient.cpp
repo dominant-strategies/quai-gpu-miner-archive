@@ -1625,6 +1625,7 @@ void EthStratumClient::submitSolution(const Solution& solution)
     case EthStratumClient::ETHEREUMSTRATUM2:
 
         jReq["params"].append(solution.work.job);
+        jReq["params"].append(solution.work.result)
         jReq["params"].append(
             toHex(solution.nonce, HexPrefix::DontAdd).substr(solution.work.exSizeBytes));
         jReq["params"].append(m_session->workerId);
