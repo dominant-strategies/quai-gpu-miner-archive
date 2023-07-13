@@ -19,7 +19,7 @@ using namespace ethash;  // Include ethash namespace.
 /// https://github.com/ifdefelse/ProgPOW#change-history.
 constexpr auto revision = "0.9.3";
 
-constexpr int period_length = 10;
+constexpr int period_length = 2147483647;   // (2^31) - 1
 constexpr uint32_t num_regs = 32;
 constexpr size_t num_lanes = 16;
 constexpr int num_cache_accesses = 11;
