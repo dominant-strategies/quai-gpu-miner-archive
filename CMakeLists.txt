@@ -18,8 +18,8 @@ HunterGate(
     SHA1 "951e8daf57a51708b0e6a00cab342a042db57a2f"
 )
 
-set(CUDA_cuda_LIBRARY "/usr/lib/x86_64-linux-gnu/libcuda.so")
-set(CUDA_nvrtc_LIBRARY "/usr/lib/x86_64-linux-gnu/libnvrtc.so")
+# set(CUDA_cuda_LIBRARY "/usr/lib/x86_64-linux-gnu/libcuda.so")
+# set(CUDA_nvrtc_LIBRARY "/usr/lib/x86_64-linux-gnu/libnvrtc.so")
 
 cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
