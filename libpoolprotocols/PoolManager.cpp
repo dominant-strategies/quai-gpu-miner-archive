@@ -212,7 +212,7 @@ void PoolManager::setClientHandlers()
             ss << std::setw(4) << std::setfill(' ') << _responseDelay.count() << " ms. "
                << m_selectedHost;
             cwarn << EthRed "**Rejected" EthReset << ss.str();
-            Farm::f().accountSolution(_minerIdx, SolutionAccountingEnum::Rejected);
+            // Farm::f().accountSolution(_minerIdx, SolutionAccountingEnum::Rejected);
         });
 }
 
