@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/INFURA/go-ethlibs/jsonrpc"
+	"github.com/dominant-strategies/go-quai/consensus"
 
 	"github.com/TwiN/go-color"
 	"github.com/dominant-strategies/go-quai/common"
+	"github.com/dominant-strategies/go-quai/consensus/blake3pow"
 	"github.com/dominant-strategies/go-quai/consensus/progpow"
 	"github.com/dominant-strategies/go-quai/core/types"
 	"github.com/dominant-strategies/go-quai/quaiclient/ethclient"
@@ -36,7 +38,7 @@ type Miner struct {
 	config util.Config
 
 	// Progpow consensus engine used to seal a block
-	engine *progpow.Progpow
+	engine consensus.Engine
 
 	// Current header to mine
 	header *types.Header
@@ -138,14 +140,17 @@ func main() {
 		zone, _ := strconv.Atoi(raw[1])
 		config.Location = common.Location{byte(region), byte(zone)}
 	}
-	// Build manager config
-	blake3Config := progpow.Config{
-		NotifyFull: true,
+	var engine consensus.Engine
+
+	if config.RunBlake3 {
+		engine = blake3pow.New(blake3pow.Config{NotifyFull: true}, nil, false)
+	} else {
+		engine = progpow.New(progpow.Config{NotifyFull: true}, nil, false)
 	}
-	blake3Engine := progpow.New(blake3Config, nil, false)
+
 	m := &Miner{
 		config:         config,
-		engine:         blake3Engine,
+		engine:         engine,
 		header:         types.EmptyHeader(),
 		updateCh:       make(chan *types.Header, resultQueueSize),
 		resultCh:       make(chan *types.Header, resultQueueSize),

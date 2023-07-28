@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/INFURA/go-ethlibs v0.0.0-20230210163729-fc6ca4235802
 	github.com/TwiN/go-color v1.4.0
-	github.com/dominant-strategies/go-quai v0.13.0-pre.0.0.20230725185857-5325692c358e
+	github.com/dominant-strategies/go-quai v0.13.0-pre.0.0.20230728195555-c5ef2c20427b
 	github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55
 	github.com/spf13/viper v1.14.0
 )
@@ -15,7 +15,7 @@ require (
 	github.com/VictoriaMetrics/fastcache v1.6.0 // indirect
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/deckarep/golang-set v0.0.0-20180603214616-504e848d77ea // indirect
+	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/dominant-strategies/bn256 v0.0.0-20220930122411-fbf930a7493d // indirect
 	github.com/edsrzf/mmap-go v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
