@@ -86,6 +86,8 @@ github.com/dominant-strategies/bn256 v0.0.0-20220930122411-fbf930a7493d h1:hkL13
 github.com/dominant-strategies/bn256 v0.0.0-20220930122411-fbf930a7493d/go.mod h1:nvtPJPChairu4o4iX2XGrstOFpLaAgNYhrUCl5bSng4=
 github.com/dominant-strategies/go-quai v0.13.0-pre.0 h1:/t4HIc/JSGwIlf5GA5ctMyPVQuxo0snrdsMLyP46aHc=
 github.com/dominant-strategies/go-quai v0.13.0-pre.0/go.mod h1:r4QarI0vb0/MvUHLKRasN74f6k/Patu9UzDyQT5a/e4=
+github.com/dominant-strategies/go-quai v0.13.0-pre.0.0.20230725185857-5325692c358e h1:KL2qOYcAitkffsA4Ch0rcCIvvRGVvkbIcD2Uc15/chQ=
+github.com/dominant-strategies/go-quai v0.13.0-pre.0.0.20230725185857-5325692c358e/go.mod h1:r4QarI0vb0/MvUHLKRasN74f6k/Patu9UzDyQT5a/e4=
 github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55 h1:TDyOiTSueb5XoQhGFK57dZZkEsQGpzGhk7ppSC9YIV0=
 github.com/dominant-strategies/go-quai-stratum v0.1.1-0.20230411175350-8a5f55caee55/go.mod h1:MYwAEiEynMvuQeEIJaxL0rn9tJ7xKg6XCr4cQ0i3TFo=
 github.com/edsrzf/mmap-go v1.1.0 h1:6EUwBLQ/Mcr1EYLE4Tn1VdW1A4ckqCQWZBw8Hr0kjpQ=
