@@ -2,25 +2,26 @@
 # The normal build depends on it properly and if the kernel file is changed, then
 # a rebuild of libethash-cl should be triggered
 
+#TODO: clean up the copy&pasting here
 add_custom_command(
-	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/CLMiner_kernel.h
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ethash.h
 	COMMAND ${CMAKE_COMMAND} ARGS
-	-DTXT2STR_SOURCE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/CLMiner_kernel.cl"
-	-DTXT2STR_VARIABLE_NAME=CLMiner_kernel
-	-DTXT2STR_HEADER_FILE="${CMAKE_CURRENT_BINARY_DIR}/CLMiner_kernel.h"
-	-P "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/txt2str.cmake"
-	COMMENT "Generating OpenCL Kernel"
-	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/CLMiner_kernel.cl
+	-DBIN2H_SOURCE_FILE="${CMAKE_CURRENT_SOURCE_DIR}/kernels/cl/ethash.cl"
+	-DBIN2H_VARIABLE_NAME=ethash_cl
+	-DBIN2H_HEADER_FILE="${CMAKE_CURRENT_BINARY_DIR}/ethash.h"
+	-P "${CMAKE_CURRENT_SOURCE_DIR}/bin2h.cmake"
+	COMMENT "Generating OpenCL Kernel Byte Array"
+	DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/cl/ethash.cl
 )
-add_custom_target(cl_kernel DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/CLMiner_kernel.h ${CMAKE_CURRENT_SOURCE_DIR}/CLMiner_kernel.cl)
+add_custom_target(clbin2h_stable DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ethash.h ${CMAKE_CURRENT_SOURCE_DIR}/cl/ethash.cl)
 
 set(SOURCES
 	CLMiner.h CLMiner.cpp
-	${CMAKE_CURRENT_BINARY_DIR}/CLMiner_kernel.h
+	${CMAKE_CURRENT_BINARY_DIR}/ethash.h
 )
 
-if(APPLE)
-	# On macOS use system OpenCL library.
+if(USE_SYS_OPENCL)
+	# On macOS or using ROCm-OpenCL, use system OpenCL library.
 	find_package(OpenCL REQUIRED)
 else()
 	hunter_add_package(OpenCL)

@@ -318,6 +318,10 @@ public:
 
         app.add_set("--cl-local-work", m_CLSettings.localWorkSize, {64, 128, 256}, "", true);
 
+        app.add_flag("--cl-nobin", m_CLSettings.noBinary, "");
+
+        app.add_flag("--cl-noexit", m_CLSettings.noExit, "");
+
 #endif
 
 #if ETH_ETHASHCUDA

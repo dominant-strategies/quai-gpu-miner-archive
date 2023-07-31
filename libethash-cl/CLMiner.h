@@ -7,7 +7,6 @@
 
 #include <fstream>
 
-#include <libprogpow/ProgPow.h>
 #include <libdevcore/Worker.h>
 #include <libethcore/EthashAux.h>
 #include <libethcore/Miner.h>
@@ -60,32 +59,33 @@ protected:
 private:
     
     void workLoop() override;
-    void compileKernel(uint64_t prog_seed, cl::Program& program, cl::Kernel& searchKernel);
-    void asyncCompile();
 
-    cl::Context m_context;
-    cl::CommandQueue m_queue;
-    cl::CommandQueue m_abortqueue;
+    vector<cl::Context> m_context;
+    vector<cl::CommandQueue> m_queue;
+    vector<cl::CommandQueue> m_abortqueue;
     cl::Kernel m_searchKernel;
-    cl::Kernel m_nextSearchKernel;
     cl::Kernel m_dagKernel;
     cl::Device m_device;
-    cl::Buffer m_header;
-    cl::Buffer m_searchBuffer;
 
-    cl::Buffer* m_dag = nullptr;
-    cl::Buffer* m_light = nullptr;
+    vector<cl::Buffer> m_dag;
+    vector<cl::Buffer> m_light;
+    vector<cl::Buffer> m_header;
+    vector<cl::Buffer> m_searchBuffer;
+
+    void clear_buffer() {
+        m_dag.clear();
+        m_light.clear();
+        m_header.clear();
+        m_searchBuffer.clear();
+        m_queue.clear();
+        m_context.clear();
+        m_abortqueue.clear();
+    }
 
     CLSettings m_settings;
 
     unsigned m_dagItems = 0;
-
-    cl::Program m_program;
-    cl::Program m_nextProgram;
-    char m_options[256] = {0};
-    int m_computeCapability = 0;
-
-    atomic<bool> m_kickEnabled = {false};
+    uint64_t m_lastNonce = 0;
 
 };
 
