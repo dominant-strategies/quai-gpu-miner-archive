@@ -4,7 +4,7 @@
 #include <string>
 
 // blocks before changing the random program
-#define PROGPOW_PERIOD          10
+#define PROGPOW_PERIOD          2147483647 // (2^31) - 1
 // lanes that work together calculating a hash
 #define PROGPOW_LANES           16
 // uint32 registers per lane
@@ -23,12 +23,14 @@
 class ProgPow
 {
 public:
-	typedef enum {
-		KERNEL_CUDA,
-		KERNEL_CL
-	} kernel_t;
+    typedef enum
+    {
+        KERNEL_CUDA,
+        KERNEL_CL
+    } kernel_t;
 
-	static std::string getKern(uint64_t seed, kernel_t kern);
+    static std::string getKern(uint64_t seed, kernel_t kern);
+
 private:
     static std::string math(std::string d, std::string a, std::string b, uint32_t r);
     static std::string merge(std::string a, std::string b, uint32_t r);

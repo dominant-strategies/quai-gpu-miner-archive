@@ -1,18 +1,18 @@
 /*
-This file is part of progminer.
+This file is part of ethcoreminer.
 
-progminer is free software: you can redistribute it and/or modify
+ethcoreminer is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-progminer is distributed in the hope that it will be useful,
+ethcoreminer is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with progminer.  If not, see <http://www.gnu.org/licenses/>.
+along with ethcoreminer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /*
@@ -31,7 +31,6 @@ along with progminer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libethcore/Farm.h>
 #include <ethash/ethash.hpp>
-#include <ethash/progpow.hpp>
 
 #include <boost/version.hpp>
 
@@ -154,10 +153,10 @@ CPUMiner::CPUMiner(unsigned _index, CPSettings _settings, DeviceDescriptor& _dev
 
 CPUMiner::~CPUMiner()
 {
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::~CPUMiner() begin");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::~CPUMiner() begin");
     stopWorking();
     kick_miner();
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::~CPUMiner() end");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::~CPUMiner() end");
 }
 
 
@@ -166,7 +165,7 @@ CPUMiner::~CPUMiner()
  */
 bool CPUMiner::initDevice()
 {
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::initDevice begin");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::initDevice begin");
 
     cpulog << "Using CPU: " << m_deviceDescriptor.cpCpuNumer << " " << m_deviceDescriptor.cuName
            << " Memory : " << dev::getFormattedMemory((double)m_deviceDescriptor.totalMemory);
@@ -199,7 +198,7 @@ bool CPUMiner::initDevice()
         // Handle Errorcode (GetLastError) ??
     }
 #endif
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::initDevice end");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::initDevice end");
     return true;
 }
 
@@ -221,7 +220,7 @@ bool CPUMiner::initEpoch_internal()
    Miner should stop working on the current block
    This happens if a
      * new work arrived                       or
-     * miner should stop (eg exit progminer)   or
+     * miner should stop (eg exit ethcoreminer)   or
      * miner should pause
 */
 void CPUMiner::kick_miner()
@@ -252,8 +251,7 @@ void CPUMiner::search(const dev::eth::WorkPackage& w)
             break;
 
 
-        //auto r = ethash::search(context, header, boundary, nonce, blocksize);
-        auto r = progpow::search(context, w.block, header, boundary, nonce, blocksize);
+        auto r = ethash::search(context, header, boundary, nonce, blocksize);
         if (r.solution_found)
         {
             h256 mix{reinterpret_cast<byte*>(r.mix_hash.bytes), h256::ConstructFromPointer};
@@ -276,7 +274,7 @@ void CPUMiner::search(const dev::eth::WorkPackage& w)
  */
 void CPUMiner::workLoop()
 {
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::workLoop() begin");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::workLoop() begin");
 
     WorkPackage current;
     current.header = h256();
@@ -325,7 +323,7 @@ void CPUMiner::workLoop()
         }
     }
 
-//    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::workLoop() end");
+    DEV_BUILD_LOG_PROGRAMFLOW(cpulog, "cp-" << m_index << " CPUMiner::workLoop() end");
 }
 
 

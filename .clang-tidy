@@ -1,7 +1,7 @@
 ---
 Checks:          'clang-diagnostic-*,clang-analyzer-*,modernize-*,bugprone-*,readability-*,-readability-implicit-bool-conversion,performance-*'
 WarningsAsErrors: ''
-HeaderFilterRegex: 'progminer/.*'
+HeaderFilterRegex: 'ethcoreminer/.*'
 CheckOptions:
   - key:             readability-braces-around-statements.ShortStatementLines
     value:           '3'

@@ -7,9 +7,9 @@
 #define mix_dst()   ("mix[" + std::to_string(mix_seq_dst[(mix_seq_dst_cnt++)%PROGPOW_REGS]) + "]")
 #define mix_cache() ("mix[" + std::to_string(mix_seq_cache[(mix_seq_cache_cnt++)%PROGPOW_REGS]) + "]")
 
-void swap(int &a, int &b)
+inline void swap(uint32_t& a, uint32_t& b)
 {
-    int t = a;
+    uint32_t t = a;
     a = b;
     b = t;
 }
@@ -30,18 +30,18 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     // Create a random sequence of mix destinations and cache sources
     // Merge is a read-modify-write, guaranteeing every mix element is modified every loop
     // Guarantee no cache load is duplicated and can be optimized away
-    int mix_seq_dst[PROGPOW_REGS];
-    int mix_seq_cache[PROGPOW_REGS];
-    int mix_seq_dst_cnt = 0;
-    int mix_seq_cache_cnt = 0;
-    for (int i = 0; i < PROGPOW_REGS; i++)
+    uint32_t mix_seq_dst[PROGPOW_REGS];
+    uint32_t mix_seq_cache[PROGPOW_REGS];
+    uint32_t mix_seq_dst_cnt = 0;
+    uint32_t mix_seq_cache_cnt = 0;
+    for (uint32_t i = 0; i < PROGPOW_REGS; i++)
     {
         mix_seq_dst[i] = i;
         mix_seq_cache[i] = i;
     }
-    for (int i = PROGPOW_REGS - 1; i > 0; i--)
+    for (uint32_t i = PROGPOW_REGS - 1; i > 0; i--)
     {
-        int j;
+        uint32_t j;
         j = rnd() % (i + 1);
         swap(mix_seq_dst[i], mix_seq_dst[j]);
         j = rnd() % (i + 1);
@@ -123,11 +123,11 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     ret << "dag_t data_dag;\n";
     ret << "uint32_t offset, data;\n";
     // Work around AMD OpenCL compiler bug
-    // See https://github.com/gangnamtestnet/progminer/issues/16
+    // See https://github.com/gangnamtestnet/ethcoreminer/issues/16
     if (kern == KERNEL_CL)
     {
         ret << "uint32_t mix[PROGPOW_REGS];\n";
-        ret << "for(int i=0; i<PROGPOW_REGS; i++)\n";
+        ret << "for(uint32_t i=0; i<PROGPOW_REGS; i++)\n";
         ret << "    mix[i] = mix_arg[i];\n";
     }
 
@@ -145,7 +145,7 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     // load
     ret << "// global load\n";
     if (kern == KERNEL_CUDA)
-        ret << "offset = SHFL(mix[0], loop%PROGPOW_LANES, PROGPOW_LANES);\n";
+        ret << "offset = SHFL(mix[0], loop % PROGPOW_LANES, PROGPOW_LANES);\n";
     else
     {
         ret << "if(lane_id == (loop % PROGPOW_LANES))\n";
@@ -162,7 +162,7 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     else
         ret << "if (hack_false) barrier(CLK_LOCAL_MEM_FENCE);\n";
 
-    for (int i = 0; (i < PROGPOW_CNT_CACHE) || (i < PROGPOW_CNT_MATH); i++)
+    for (uint32_t i = 0; (i < PROGPOW_CNT_CACHE) || (i < PROGPOW_CNT_MATH); i++)
     {
         if (i < PROGPOW_CNT_CACHE)
         {
@@ -180,9 +180,9 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
         {
             // Random Math
             // Generate 2 unique sources
-            int src_rnd = rnd() % ((PROGPOW_REGS - 1) * PROGPOW_REGS);
-            int src1 = src_rnd % PROGPOW_REGS; // 0 <= src1 < PROGPOW_REGS
-            int src2 = src_rnd / PROGPOW_REGS; // 0 <= src2 < PROGPOW_REGS - 1
+            uint32_t src_rnd = rnd() % ((PROGPOW_REGS - 1) * PROGPOW_REGS);
+            uint32_t src1 = src_rnd % PROGPOW_REGS;  // 0 <= src1 < PROGPOW_REGS
+            uint32_t src2 = src_rnd / PROGPOW_REGS;  // 0 <= src2 < PROGPOW_REGS - 1
             if (src2 >= src1) ++src2; // src2 is now any reg other than src1
             std::string src1_str = "mix[" + std::to_string(src1) + "]";
             std::string src2_str = "mix[" + std::to_string(src2) + "]";
@@ -202,7 +202,7 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     else
         ret << "if (hack_false) barrier(CLK_LOCAL_MEM_FENCE);\n";
     ret << merge("mix[0]", "data_dag.s[0]", rnd());
-    for (int i = 1; i < PROGPOW_DAG_LOADS; i++)
+    for (uint32_t i = 1; i < PROGPOW_DAG_LOADS; i++)
     {
         std::string dest = mix_dst();
         uint32_t    r = rnd();
@@ -211,7 +211,7 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     // Work around AMD OpenCL compiler bug
     if (kern == KERNEL_CL)
     {
-        ret << "for(int i=0; i<PROGPOW_REGS; i++)\n";
+        ret << "for(uint32_t i=0; i<PROGPOW_REGS; i++)\n";
         ret << "    mix_arg[i] = mix[i];\n";
     }
     ret << "}\n";

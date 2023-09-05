@@ -1,24 +1,24 @@
 /*
-This file is part of progminer.
+This file is part of ethcoreminer.
 
-progminer is free software: you can redistribute it and/or modify
+ethcoreminer is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-progminer is distributed in the hope that it will be useful,
+ethcoreminer is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with progminer.  If not, see <http://www.gnu.org/licenses/>.
+along with ethcoreminer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <fstream>
 #include <iostream>
 
-#include <nvrtc.h>
+#include "cuda.h"
 
 #include <libethcore/Farm.h>
 #include <ethash/ethash.hpp>
@@ -235,7 +235,9 @@ void CUDAMiner::workLoop()
                 }
                 old_period_seed = period_seed;
                 m_kernelExecIx ^= 1;
+#if DEV_BUILD
                 cudalog << "Launching period " << period_seed << " ProgPow kernel";
+#endif
                 m_nextProgpowPeriod = period_seed + 1;
                 m_compileThread = new boost::thread(boost::bind(&CUDAMiner::asyncCompile, this));
             }
@@ -339,11 +341,11 @@ void CUDAMiner::enumDevices(std::map<string, DeviceDescriptor>& _DevicesCollecti
 
 void CUDAMiner::asyncCompile()
 {
-    auto saveName = getThreadName();
-    setThreadName(name().c_str());
-
     if (!dropThreadPriority())
         cudalog << "Unable to lower compiler priority.";
+
+    auto saveName = getThreadName();
+    setThreadName(name().c_str());
 
     cuCtxSetCurrent(m_context);
 
@@ -460,8 +462,10 @@ void CUDAMiner::compileKernel(uint64_t period_seed, uint64_t dag_elms, CUfunctio
     // Destroy the program.
     NVRTC_SAFE_CALL(nvrtcDestroyProgram(&prog));
 
+#ifdef DEV_BUILD
     cudalog << "Pre-compiled period " << period_seed << " CUDA ProgPow kernel for arch "
             << to_string(device_props.major) << '.' << to_string(device_props.minor);
+#endif
 }
 
 void CUDAMiner::search(
@@ -575,14 +579,6 @@ void CUDAMiner::search(
                     Farm::f().submitProof(Solution{
                         nonce, mixHashes[i], w, std::chrono::steady_clock::now(), m_index});
 
-                    cudalog << "Found result";
-                    cudalog << "nonce : " << toHex(nonce);
-                    cudalog << "mixhash : " << mixHashes[i];
-                    cudalog << "boundary : " << w.boundary;
-                    cudalog << "sealhash : " << w.header;
-                    cudalog << "epoch : " << w.epoch;
-                    cudalog << "seed : " << w.seed;
-                    cudalog << "block : " << w.block;
                     cudalog << EthWhite << "Job: " << w.header.abridged() << " Sol: 0x"
                             << toHex(nonce) << EthReset;
                 }

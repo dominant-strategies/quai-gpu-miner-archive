@@ -14,17 +14,14 @@ cable_configure_toolchain(DEFAULT cxx11)
 set(HUNTER_CONFIGURATION_TYPES Release CACHE STRING "Build type of Hunter packages")
 set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter")
 HunterGate(
-    URL "https://github.com/ruslo/hunter/archive/v0.23.6.tar.gz"
-    SHA1 "951e8daf57a51708b0e6a00cab342a042db57a2f"
+    URL "https://github.com/ruslo/hunter/archive/v0.23.112.tar.gz"
+    SHA1 "4b894e1d5d203f0cc9a77431dbb1b486ab6f4430"
 )
-
-set(CUDA_cuda_LIBRARY "/usr/lib/x86_64-linux-gnu/libcuda.so")
-set(CUDA_nvrtc_LIBRARY "/usr/lib/x86_64-linux-gnu/libnvrtc.so")
 
 cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
-project(progminer)
-set(PROJECT_VERSION 1.1.2)
+project(ethcoreminer)
+set(PROJECT_VERSION 1.0.0)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
 option(ETHASHCUDA "Build with CUDA mining" ON)
@@ -60,9 +57,6 @@ find_package(Boost CONFIG REQUIRED COMPONENTS system filesystem thread)
 
 hunter_add_package(jsoncpp)
 find_package(jsoncpp CONFIG REQUIRED)
-
-# hunter_add_package(ethash)
-# find_package(ethash CONFIG REQUIRED)
 
 configureProject()
 
@@ -109,7 +103,7 @@ if (APICORE)
 	add_subdirectory(libapicore)
 endif()
 
-add_subdirectory(progminer)
+add_subdirectory(ethcoreminer)
 
 
 if(WIN32)

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 ## vim:set ft=bash ts=4 sw=4 et:
 #
-# Testscript to test progminer multiple pools/hosts/syntaxes
-# Put this script in the bin directory of progminer and start running
+# Testscript to test ethcoreminer multiple pools/hosts/syntaxes
+# Put this script in the bin directory of ethcoreminer and start running
 #
 # Run each host 30 times (having a sleep time of 5 sec) which
 # means we run one host max 150sec and wait for one of the following
@@ -16,7 +16,7 @@
 # implementation and  pool handling parts we can honor by using his
 # donation wallet adresses
 
-# export some vars as "./progminer" could be still a wrapper script
+# export some vars as "./ethcoreminer" could be still a wrapper script
 export ETH_WALLET="0x9E431042fAA3224837e9BEDEcc5F4858cf0390B9"
 export WORKERNAME="pooltester"
 export EMAIL="andrea.lanfranchi%40gmail.com"
@@ -150,9 +150,9 @@ for pool in $POOLS; do
     pool=$(echo "${pool/BTC_WALLET/$BTC_WALLET}")
 
     echo "Testing=$current_test_pattern"
-    echo "./progminer -v 1 --exit --report-hashrate -P $pool $@"
-    echo "./progminer -v 1 --exit --report-hashrate -P $pool $@" > log.txt
-    ./progminer -v 1 --exit --report-hashrate -P $pool $@ >> log.txt 2>&1 &
+    echo "./ethcoreminer -v 1 --exit --report-hashrate -P $pool $@"
+    echo "./ethcoreminer -v 1 --exit --report-hashrate -P $pool $@" > log.txt
+    ./ethcoreminer -v 1 --exit --report-hashrate -P $pool $@ >> log.txt 2>&1 &
     pid=$!
     #echo "PID=$pid"
 

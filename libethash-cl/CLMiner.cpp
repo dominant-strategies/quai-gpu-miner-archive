@@ -471,7 +471,7 @@ void CLMiner::enumDevices(std::map<string, DeviceDescriptor>& _DevicesCollection
         ClPlatformTypeEnum platformType = ClPlatformTypeEnum::Unknown;
         if (platformName == "AMD Accelerated Parallel Processing")
             platformType = ClPlatformTypeEnum::Amd;
-        else if (platformName == "Clover")
+        else if (platformName == "Clover" || platformName == "Intel Gen OCL Driver")
             platformType = ClPlatformTypeEnum::Clover;
         else if (platformName == "NVIDIA CUDA")
             platformType = ClPlatformTypeEnum::Nvidia;
@@ -762,7 +762,9 @@ bool CLMiner::initEpoch_internal()
             fname_strm << boost::dll::program_location().parent_path().string()
                        << "/kernels/progpow_" << device_name << "_lws" << m_settings.localWorkSize
                        << ".bin";
+#if DEV_BUILD
             cllog << "Loading binary kernel " << fname_strm.str();
+#endif
             try
             {
                 kernel_file.open(fname_strm.str(), ios::in | ios::binary);
@@ -955,6 +957,7 @@ void CLMiner::compileKernel(uint64_t period_seed, cl::Program& program, cl::Kern
 
     searchKernel.setArg(1, m_header);
     searchKernel.setArg(5, 0);
-
+#if DEV_BUILD
     cllog << "Pre-compiled period " << period_seed << " OpenCL ProgPow kernel";
+#endif
 }

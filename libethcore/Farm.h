@@ -1,18 +1,18 @@
 /*
- This file is part of progminer.
+ This file is part of ethcoreminer.
 
- progminer is free software: you can redistribute it and/or modify
+ ethcoreminer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- progminer is distributed in the hope that it will be useful,
+ ethcoreminer is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with progminer.  If not, see <http://www.gnu.org/licenses/>.
+ along with ethcoreminer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -256,7 +256,7 @@ private:
     void collectData(const boost::system::error_code& ec);
 
     /**
-     * @brief Spawn a file - must be located in the directory of progminer binary
+     * @brief Spawn a file - must be located in the directory of ethcoreminer binary
      * @return false if file was not found or it is not executeable
      */
     bool spawn_file_in_bin_dir(const char* filename, const std::vector<std::string>& args);
@@ -307,6 +307,10 @@ private:
 
     static Farm* m_this;
     std::map<std::string, DeviceDescriptor>& m_DevicesCollection;
+
+#if DEV_BUILD
+    uint32_t m_period = 0;
+#endif
 };
 
 }  // namespace eth

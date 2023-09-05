@@ -176,7 +176,7 @@ void PoolManager::setClientHandlers()
             if (wp.epoch == -1)
             {
                 if (m_currentWp.block > 0)
-                    m_currentWp.epoch = m_currentWp.block / 30000;
+                    m_currentWp.epoch = m_currentWp.block / 2147483647;
                 else
                     m_currentWp.epoch = ethash::find_epoch_number(
                         ethash::hash256_from_bytes(m_currentWp.seed.data()));
@@ -212,7 +212,7 @@ void PoolManager::setClientHandlers()
             ss << std::setw(4) << std::setfill(' ') << _responseDelay.count() << " ms. "
                << m_selectedHost;
             cwarn << EthRed "**Rejected" EthReset << ss.str();
-            Farm::f().accountSolution(_minerIdx, SolutionAccountingEnum::Rejected);
+            // Farm::f().accountSolution(_minerIdx, SolutionAccountingEnum::Rejected);
         });
 }
 
@@ -424,7 +424,7 @@ void PoolManager::rotateConnect()
             setClientHandlers();
 
         // Count connectionAttempts
-        m_connectionAttempt++;
+        // m_connectionAttempt++;
 
         // Invoke connections
         m_selectedHost = m_Settings.connections.at(m_activeConnectionIdx)->Host() + ":" +

@@ -1,18 +1,18 @@
 /*
- This file is part of progminer.
+ This file is part of ethcoreminer.
 
- progminer is free software: you can redistribute it and/or modify
+ ethcoreminer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- progminer is distributed in the hope that it will be useful,
+ ethcoreminer is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with progminer.  If not, see <http://www.gnu.org/licenses/>.
+ along with ethcoreminer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
@@ -300,7 +300,7 @@ struct TelemetryType
 
             // Eventually push also solutions per single GPU
             if (g_logOptions & LOG_PER_GPU)
-                _ret << " solutions " << EthTeal << miner.solutions.str() << EthReset;
+                _ret << " " << EthTeal << miner.solutions.str() << EthReset;
 
             // Separator if not the last miner index
             if (i < m)

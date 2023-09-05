@@ -26,8 +26,7 @@
 
 /** [[no_sanitize()]] */
 #if __clang__
-#define NO_SANITIZE(sanitizer) \
-    __attribute__((no_sanitize(sanitizer)))
+#define NO_SANITIZE(sanitizer) __attribute__((no_sanitize(sanitizer)))
 #else
 #define NO_SANITIZE(sanitizer)
 #endif

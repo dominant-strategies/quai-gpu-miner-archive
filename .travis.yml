@@ -32,11 +32,20 @@ matrix:
           env:
               - CUDA=ON
               - CUDA_VERSION=8
+        - os: linux
+          dist: trusty
+          sudo: required
+          env:
+              - CUDA=OFF
         - os: osx
           osx_image: xcode9.2
           env:
               - CUDA=ON
               - CUDA_VERSION=9
+        - os: osx
+          osx_image: xcode9.2
+          env:
+              - CUDA=OFF
 cache:
     directories:
         - $HOME/.local
@@ -48,7 +57,7 @@ before_install:
       git diff --color # --exit-code
     fi
   - |
-    if [ "$TRAVIS_OS_NAME" = linux ]; then
+    if [ "$TRAVIS_OS_NAME" = linux ] && [ "$CUDA" = "ON" ]; then
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
       sudo apt-get -q update
       sudo apt-get -qy install g++-6
@@ -61,7 +70,16 @@ before_install:
       fi
       export CC=gcc-6
       export CXX=g++-6
-    elif [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    elif [ "$TRAVIS_OS_NAME" = linux ] && [ "$CUDA" = "OFF" ]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt-get -q update
+      sudo apt-get -qy install g++-6
+      scripts/install_cmake.sh
+      pyenv global 3.6
+      pip install --user requests gitpython
+      export CC=gcc-6
+      export CXX=g++-6
+    elif [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CUDA" = "ON" ]; then
       curl -L https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.128_mac -o $HOME/cuda_9.1.128_mac.dmg
       hdiutil mount $HOME/cuda_9.1.128_mac.dmg
       sleep 5
@@ -74,26 +92,35 @@ before_install:
       fi
       HOMEBREW_NO_AUTO_UPDATE=1 brew install -q python3
       pip3 install -q requests gitpython
+    elif [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CUDA" = "OFF" ]; then
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install -q python3
+      pip3 install -q requests gitpython
     fi
 script: |
     if [ "$CUDA_VERSION" = "8" ]; then
       cmake -DCUDA_HOST_COMPILER=/usr/bin/gcc-5 -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=$CUDA -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
+    elif [ "$CUDA" = "OFF" ]; then
+      cmake -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=OFF -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
     else
       cmake -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=$CUDA -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
     fi
     cmake --build build --target package -- -j4
-    #build/progminer/progminer --help
-    if [ "$TRAVIS_OS_NAME" = linux ]; then ldd -v build/progminer/progminer; fi
-    if [ "$TRAVIS_OS_NAME" = osx ]; then otool -L build/progminer/progminer; fi
-    . build/progminer/buildinfo.sh
+    #build/ethcoreminer/ethcoreminer --help
+    if [ "$TRAVIS_OS_NAME" = linux ]; then ldd -v build/ethcoreminer/ethcoreminer; fi
+    if [ "$TRAVIS_OS_NAME" = osx ]; then otool -L build/ethcoreminer/ethcoreminer; fi
+    . build/ethcoreminer/buildinfo.sh
     mkdir package
-    mv build/progminer.tar.gz package/$PROJECT_NAME-$PROJECT_VERSION-cuda-$CUDA_VERSION-$SYSTEM_NAME-$SYSTEM_PROCESSOR.tar.gz
+    if [ "$CUDA" = "OFF" ]; then
+      mv build/ethcoreminer.tar.gz package/$PROJECT_NAME-$PROJECT_VERSION-amd-opencl-$SYSTEM_NAME-$SYSTEM_PROCESSOR.tar.gz
+    else
+      mv build/ethcoreminer.tar.gz package/$PROJECT_NAME-$PROJECT_VERSION-nvidia-cuda-$CUDA_VERSION-$SYSTEM_NAME-$SYSTEM_PROCESSOR.tar.gz
+    fi
 
 
 deploy:
   - provider: releases
     api_key:
-      secure: "tDcvfJiWtLDTalXBI7vGTFKt6epnoGmkQgcaaKW6OkYso55pIv003xlOUZ+PzzlOzYEDAmtgDIh63Th+ev2r7zrMBCzw6ntSb3c+bqhjTRo+G+2QWN89QH8bN6d2To8Roa0vlDHS4ADEqoxb3+7v7qn5LRoaZu25nsqqfFVHM5VPez5MMFKkJvqcvEOXRVsQM1apYjsTXc+mxJF0Iel+YhTbqjt+8j4epAvtgSzptTpzSwnqx5GCwb9SuHFrhI9XieC3RC75br9/KW/gLjfkRaOKsbdds1wDGvQwDqkimZOdcN7BoaH6DJqQYQWQg5kxlRxdaXRiIzRCElOKncL6FyyfhCdUQbNd07ujjfKPtTCvWXeLDjeIoQ5h7Lo7QEOlBl4yxi+1hKR5Pn/nxv81kfd+bWoc+uPA/UPbX2EqqDss5deqYKpugToulphCCxUiNFpaEgmDXads3H1UgMaBF5qepkAUckbquFLs2kC8MiD6uZsjzlVpvjNJbiib6ofRt+Z1IuIjT+w63afNu43tMHQWii1tFpU6NubxiDYYuW0E4Rd4Nil8fvy/vGh5jGLVitpUk/xk5Pguf+GtMuZgasbZxUD3OI5MvKQ/LPwbIrJRJWtqD02TZmnDZ6O5k98qWhn8VmWbteu0BMeVofot8Bziq7Cmx675izLunZ0fkpg="
+      secure: "TVqN0cNOYnvBvH5dprzILUGalVtKsdLjfKe5AnlS63yO22RUPaelzmCctVX7Isw6BQLes8lfQ8SoR0tj5MPvvKS7nYHaxQuv9Iou8f4LeFN/EHzH7jcVCe8oyQfCRLe5jt7ii4FMxWHsyreA4NNgc35IzCRIbT9w+l3v/CuJvfYfmjScu/5vmliornZ6Q3WCu49jLUIU7/uPivAfcdhvToSnO0tJUCKJIuBmWsLRRdJFu68LKhT3MDrCtyzF3EtLpTm7cJeQ/RvN55UlCjhNoBcQYDTY1gsEo/l0xBqalT3CFIoMUl1Fb0yOMU6udSSPnTDqlqY5cgOhrzZJxjYAI8LM9UZYuOt9Z4rh/GJb17Epg1WS+LGmonCexgBjZqBrOEQuOdJPnnydg7rH0i7v9z4zPi0cD21uFYvCgMdLgI4Lplylv1fSqt3HNOICoX6bVauA5PQ+m5cUf7nG3yPo9RXbn9wmwOTqNXz/Kgeik36EHewaOAaGSR9ZWg/jFHSLkfvXrvtMK7QAR+DZM5pdlKY3nTenf7vb4faEzlqb7/jglI7i14gt72yjg/Y5ZlB6sI1t2h7riUHakRja0PYbfrCcmH2fyo5l+x1Jz37/qTB2ni4cm2ccDkxocC/2C8Ky1MDUro2Le/qkHSRFQ5ns5BYd5KaiZ4ZMzonbl/04crs="
     file_glob: true
     file: package/*
     skip_cleanup: true

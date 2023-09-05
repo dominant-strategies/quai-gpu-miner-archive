@@ -1,18 +1,18 @@
 /*
- This file is part of progminer.
+ This file is part of ethcoreminer.
 
- progminer is free software: you can redistribute it and/or modify
+ ethcoreminer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
 
- progminer is distributed in the hope that it will be useful,
+ ethcoreminer is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with progminer.  If not, see <http://www.gnu.org/licenses/>.
+ along with ethcoreminer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -234,6 +234,15 @@ void Farm::setWork(WorkPackage const& _newWp)
         m_currentWp.startNonce = _startNonce + ((uint64_t)i << m_nonce_segment_with);
         m_miners.at(i)->setWork(m_currentWp);
     }
+
+#if DEV_BUILD
+    uint32_t period = m_currentWp.block / PROGPOW_PERIOD;
+    if (m_period != period)
+    {
+        m_period = period;
+        cnote << "New ProgPow period: " << period;
+    }
+#endif
 }
 
 /**
@@ -395,34 +404,34 @@ void Farm::accountSolution(unsigned _minerIdx, SolutionAccountingEnum _accountin
 {
     if (_accounting == SolutionAccountingEnum::Accepted)
     {
-        m_telemetry.farm.solutions.accepted++;
-        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
-        m_telemetry.miners.at(_minerIdx).solutions.accepted++;
-        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.farm.solutions.accepted++;
+        // m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.miners.at(_minerIdx).solutions.accepted++;
+        // m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Wasted)
     {
-        m_telemetry.farm.solutions.wasted++;
-        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
-        m_telemetry.miners.at(_minerIdx).solutions.wasted++;
-        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.farm.solutions.wasted++;
+        // m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.miners.at(_minerIdx).solutions.wasted++;
+        // m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Rejected)
     {
-        m_telemetry.farm.solutions.rejected++;
-        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
-        m_telemetry.miners.at(_minerIdx).solutions.rejected++;
-        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.farm.solutions.rejected++;
+        // m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.miners.at(_minerIdx).solutions.rejected++;
+        // m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Failed)
     {
-        m_telemetry.farm.solutions.failed++;
-        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
-        m_telemetry.miners.at(_minerIdx).solutions.failed++;
-        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.farm.solutions.failed++;
+        // m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        // m_telemetry.miners.at(_minerIdx).solutions.failed++;
+        // m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
 }
@@ -488,14 +497,11 @@ void Farm::submitProofAsync(Solution const& _s)
         Result r = EthashAux::eval(_s.work.epoch, _s.work.block, _s.work.header, _s.nonce);
         if (r.value > _s.work.boundary)
         {
-            cwarn << "value greater than boundary";
             accountSolution(_s.midx, SolutionAccountingEnum::Failed);
             cwarn << "GPU " << _s.midx
                   << " gave incorrect result. Lower overclocking values if it happens frequently.";
             return;
         }
-        cwarn << "Boundary :  " << _s.work.boundary;
-        cwarn << "GPU result: " << r.value;
         if (dbuild && (_s.mixHash != r.mixHash))
             cwarn << "GPU " << _s.midx << " mix missmatch";
         m_onSolutionFound(Solution{_s.nonce, r.mixHash, _s.work, _s.tstamp, _s.midx});

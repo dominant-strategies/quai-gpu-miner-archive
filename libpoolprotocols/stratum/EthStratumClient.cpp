@@ -1,4 +1,4 @@
-#include <progminer/buildinfo.h>
+#include <ethcoreminer/buildinfo.h>
 #include <libdevcore/Log.h>
 #include <ethash/ethash.hpp>
 
@@ -539,7 +539,7 @@ void EthStratumClient::connect_handler(const boost::system::error_code& ec)
 #endif
                 cwarn << "* Double check hostname in the -P argument.";
                 cwarn << "* Disable certificate verification all-together via environment "
-                         "variable. See progminer --help for info about environment variables";
+                         "variable. See ethcoreminer --help for info about environment variables";
                 cwarn << "If you do the latter please be advised you might expose yourself to the "
                          "risk of seeing your shares stolen";
             }
@@ -614,7 +614,7 @@ void EthStratumClient::connect_handler(const boost::system::error_code& ec)
 
     case EthStratumClient::ETHEREUMSTRATUM:
 
-        jReq["params"].append(progminer_get_buildinfo()->project_name_with_version);
+        jReq["params"].append(ethcoreminer_get_buildinfo()->project_name_with_version);
         jReq["params"].append("EthereumStratum/1.0.0");
 
         break;
@@ -623,7 +623,7 @@ void EthStratumClient::connect_handler(const boost::system::error_code& ec)
 
         jReq["method"] = "mining.hello";
         Json::Value jPrm;
-        jPrm["agent"] = progminer_get_buildinfo()->project_name_with_version;
+        jPrm["agent"] = ethcoreminer_get_buildinfo()->project_name_with_version;
         jPrm["host"] = m_conn->Host();
         jPrm["port"] = toCompactHex((uint32_t)m_conn->Port(), HexPrefix::DontAdd);
         jPrm["proto"] = "EthereumStratum/2.0.0";
@@ -744,7 +744,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         (_isNotification && (responseObject["params"].empty() && responseObject["result"].empty())))
     {
         cwarn << "Pool sent an invalid jsonrpc message...";
-        cwarn << "Do not blame progminer for this. Ask pool devs to honor http://www.jsonrpc.org/ "
+        cwarn << "Do not blame ethcoreminer for this. Ask pool devs to honor http://www.jsonrpc.org/ "
                  "specifications ";
         cwarn << "Disconnecting...";
         m_io_service.post(m_io_strand.wrap(boost::bind(&EthStratumClient::disconnect, this)));
@@ -1499,7 +1499,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
         else if (_method == "client.get_version")
         {
             jReq["id"] = _id;
-            jReq["result"] = progminer_get_buildinfo()->project_name_with_version;
+            jReq["result"] = ethcoreminer_get_buildinfo()->project_name_with_version;
 
             if (_rpcVer == 1)
             {
