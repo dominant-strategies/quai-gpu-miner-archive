@@ -212,7 +212,6 @@ void PoolManager::setClientHandlers()
             ss << std::setw(4) << std::setfill(' ') << _responseDelay.count() << " ms. "
                << m_selectedHost;
             cwarn << EthRed "**Rejected" EthReset << ss.str();
-            Farm::f().accountSolution(_minerIdx, SolutionAccountingEnum::Rejected);
         });
 }
 
@@ -424,7 +423,6 @@ void PoolManager::rotateConnect()
             setClientHandlers();
 
         // Count connectionAttempts
-        m_connectionAttempt++;
 
         // Invoke connections
         m_selectedHost = m_Settings.connections.at(m_activeConnectionIdx)->Host() + ":" +
