@@ -1,0 +1,128 @@
+language: cpp
+env:
+  global:
+    - secure: "Pu2hPyp3Ym3hmkW9iXVZObfE7tA3ITSaeR05VguJ9czJAMgaT7LmEN4LDoR2sQHbRAv+8QngbNUFpglzvZLIBIEefyEA39DThZptkKJ+hCUerRajfmXywSXCwPC7A1uTEY1YoUDlGvxVZA3Z7f17GFtKtDuHjLSWmrxHAM6wjK+qCweEq0umJJ+N+2DX2UpVLlWgYoknYSGipfjHRBEgPp4NRh08yvpDTFYSVQeL0qL7LbyAtkx6qhLCK6JZ2CsP3INQOoRwc8jP6VIFbuoHl3lkOzayNM49/e9wDdZ8FGqp0HjUFi7EYi/78Uvje7CrgdCiSVwoHbtAvcyPYcxu+qXzwh4AxslRL7UJtOzTbRaXfJvqt2oqtttFjD0Dk/iwnAthg7Su6UohivcUVj/9p1X1KdDbLJcoTag/MBcZP7VJDgnHjyqYwVciT1ZV0RWfuLBI584vFMTlsdzFXt384mUTCN02BOnRnw3Miq4a5irFXnDy23TdGersk7b//FPIBIhPv/wxCjUkJzTmt7ska5jACb/FHUoOyrE5mQLSVZbh/zlsIKf8yWZy7q7caowmwyPYZtAqNZWj1JmVs2c+0RmX2c76kCTHX4ocCcDx1QqV49/+R1Ah+pA7X7kcr9MklzL9z/lkAA7z5SF/UzdoGfBNicMKz5hUFixBqZ04ATw="
+branches:
+    only:
+        - /^v\d+\..+$/
+        - master
+        - ci
+        - travis
+        - hunter
+        - coverity
+        - /^travis-.*$/
+        - /^release.*$/
+matrix:
+    include:
+        - os: linux
+          dist: trusty
+          sudo: required
+          env:
+              - CUDA=ON
+              - CUDA_VERSION=10
+        - os: linux
+          dist: trusty
+          sudo: required
+          env:
+              - CUDA=ON
+              - CUDA_VERSION=9
+        - os: linux
+          dist: trusty
+          sudo: required
+          env:
+              - CUDA=ON
+              - CUDA_VERSION=8
+        - os: linux
+          dist: trusty
+          sudo: required
+          env:
+              - CUDA=OFF
+        - os: osx
+          osx_image: xcode9.2
+          env:
+              - CUDA=ON
+              - CUDA_VERSION=9
+        - os: osx
+          osx_image: xcode9.2
+          env:
+              - CUDA=OFF
+cache:
+    directories:
+        - $HOME/.local
+before_install:
+  - |
+    if [ "$TRAVIS_OS_NAME" = linux ]; then
+      echo "Checking format of sourcecode..."
+      find . -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.cu' -o -name '*.cuh' \) -print0 | xargs -r0 clang-format -i
+      git diff --color # --exit-code
+    fi
+  - |
+    if [ "$TRAVIS_OS_NAME" = linux ] && [ "$CUDA" = "ON" ]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt-get -q update
+      sudo apt-get -qy install g++-6
+      scripts/install_cmake.sh
+      . scripts/install-cuda-ubuntu1604.sh $CUDA_VERSION
+      pyenv global 3.6
+      pip install --user requests gitpython
+      if [ "$CUDA_VERSION" = "8" ]; then
+        sudo apt-get -qy install g++-5
+      fi
+      export CC=gcc-6
+      export CXX=g++-6
+    elif [ "$TRAVIS_OS_NAME" = linux ] && [ "$CUDA" = "OFF" ]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt-get -q update
+      sudo apt-get -qy install g++-6
+      scripts/install_cmake.sh
+      pyenv global 3.6
+      pip install --user requests gitpython
+      export CC=gcc-6
+      export CXX=g++-6
+    elif [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CUDA" = "ON" ]; then
+      curl -L https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.128_mac -o $HOME/cuda_9.1.128_mac.dmg
+      hdiutil mount $HOME/cuda_9.1.128_mac.dmg
+      sleep 5
+      ls -ltr /Volumes/CUDAMacOSXInstaller/CUDAMacOSXInstaller.app/Contents/MacOS
+      sudo /Volumes/CUDAMacOSXInstaller/CUDAMacOSXInstaller.app/Contents/MacOS/CUDAMacOSXInstaller --accept-eula --no-window; export BREW_STATUS=$?
+      echo "Brew status $BREW_STATUS"
+      if [ $BREW_STATUS -ne 0 ]; then
+        echo "Brew Failed"
+        exit $BREW_STATUS
+      fi
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install -q python3
+      pip3 install -q requests gitpython
+    elif [ "$TRAVIS_OS_NAME" == "osx" ] && [ "$CUDA" = "OFF" ]; then
+      HOMEBREW_NO_AUTO_UPDATE=1 brew install -q python3
+      pip3 install -q requests gitpython
+    fi
+script: |
+    if [ "$CUDA_VERSION" = "8" ]; then
+      cmake -DCUDA_HOST_COMPILER=/usr/bin/gcc-5 -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=$CUDA -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
+    elif [ "$CUDA" = "OFF" ]; then
+      cmake -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=OFF -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
+    else
+      cmake -DHUNTER_JOBS_NUMBER=4 -DETHASHCUDA=$CUDA -DETHASHCL=ON -DAPICORE=ON -H. -Bbuild
+    fi
+    cmake --build build --target package -- -j4
+    #build/ethcoreminer/ethcoreminer --help
+    if [ "$TRAVIS_OS_NAME" = linux ]; then ldd -v build/ethcoreminer/ethcoreminer; fi
+    if [ "$TRAVIS_OS_NAME" = osx ]; then otool -L build/ethcoreminer/ethcoreminer; fi
+    . build/ethcoreminer/buildinfo.sh
+    mkdir package
+    if [ "$CUDA" = "OFF" ]; then
+      mv build/ethcoreminer.tar.gz package/$PROJECT_NAME-$PROJECT_VERSION-amd-opencl-$SYSTEM_NAME-$SYSTEM_PROCESSOR.tar.gz
+    else
+      mv build/ethcoreminer.tar.gz package/$PROJECT_NAME-$PROJECT_VERSION-nvidia-cuda-$CUDA_VERSION-$SYSTEM_NAME-$SYSTEM_PROCESSOR.tar.gz
+    fi
+
+
+deploy:
+  - provider: releases
+    api_key:
+      secure: "TVqN0cNOYnvBvH5dprzILUGalVtKsdLjfKe5AnlS63yO22RUPaelzmCctVX7Isw6BQLes8lfQ8SoR0tj5MPvvKS7nYHaxQuv9Iou8f4LeFN/EHzH7jcVCe8oyQfCRLe5jt7ii4FMxWHsyreA4NNgc35IzCRIbT9w+l3v/CuJvfYfmjScu/5vmliornZ6Q3WCu49jLUIU7/uPivAfcdhvToSnO0tJUCKJIuBmWsLRRdJFu68LKhT3MDrCtyzF3EtLpTm7cJeQ/RvN55UlCjhNoBcQYDTY1gsEo/l0xBqalT3CFIoMUl1Fb0yOMU6udSSPnTDqlqY5cgOhrzZJxjYAI8LM9UZYuOt9Z4rh/GJb17Epg1WS+LGmonCexgBjZqBrOEQuOdJPnnydg7rH0i7v9z4zPi0cD21uFYvCgMdLgI4Lplylv1fSqt3HNOICoX6bVauA5PQ+m5cUf7nG3yPo9RXbn9wmwOTqNXz/Kgeik36EHewaOAaGSR9ZWg/jFHSLkfvXrvtMK7QAR+DZM5pdlKY3nTenf7vb4faEzlqb7/jglI7i14gt72yjg/Y5ZlB6sI1t2h7riUHakRja0PYbfrCcmH2fyo5l+x1Jz37/qTB2ni4cm2ccDkxocC/2C8Ky1MDUro2Le/qkHSRFQ5ns5BYd5KaiZ4ZMzonbl/04crs="
+    file_glob: true
+    file: package/*
+    skip_cleanup: true
+    on:
+      tags: true
