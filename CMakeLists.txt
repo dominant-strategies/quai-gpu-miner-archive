@@ -16,13 +16,12 @@ set(HUNTER_JOBS_NUMBER 6 CACHE STRING "Number of parallel builds used by Hunter"
 HunterGate(
     URL "https://github.com/ruslo/hunter/archive/v0.23.112.tar.gz"
     SHA1 "4b894e1d5d203f0cc9a77431dbb1b486ab6f4430"
-    LOCAL
 )
+
+cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
 project(ethcoreminer)
 set(PROJECT_VERSION 1.0.0)
-
-cable_set_build_type(DEFAULT Release CONFIGURATION_TYPES Release RelWithDebInfo)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
 option(ETHASHCUDA "Build with CUDA mining" ON)
