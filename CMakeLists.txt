@@ -24,7 +24,7 @@ project(ethcoreminer)
 set(PROJECT_VERSION 1.0.0)
 
 option(ETHASHCL "Build with OpenCL mining" ON)
-option(ETHASHCUDA "Build with CUDA mining" ON)
+option(ETHASHCUDA "Build with CUDA mining" OFF)
 option(ETHASHCPU "Build with CPU mining (only for development)" OFF)
 option(ETHDBUS "Build with D-Bus support" OFF)
 option(APICORE "Build with API Server support" ON)
