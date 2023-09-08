@@ -363,6 +363,14 @@ func (m *Miner) resultLoop() {
 				log.Println("Mined block had invalid order: err=", err)
 				return
 			}
+			switch order {
+			case common.PRIME_CTX:
+				log.Println(color.Ize(color.Red, "PRIME block : "), header.NumberArray(), header.Hash())
+			case common.REGION_CTX:
+				log.Println(color.Ize(color.Yellow, "REGION block: "), header.NumberArray(), header.Hash())
+			case common.ZONE_CTX:
+				log.Println(color.Ize(color.Blue, "ZONE block  : "), header.NumberArray(), header.Hash())
+			}
 			if !m.config.Proxy {
 				for i := common.HierarchyDepth - 1; i >= order; i-- {
 					err := m.sendMinedHeaderNodes(i, header)
@@ -375,14 +383,6 @@ func (m *Miner) resultLoop() {
 			} else {
 				// Proxy miner only needs to send to the proxy (stored at zone context).
 				go m.sendMinedHeaderProxy(header)
-			}
-			switch order {
-			case common.PRIME_CTX:
-				log.Println(color.Ize(color.Red, "PRIME block : "), header.NumberArray(), header.Hash())
-			case common.REGION_CTX:
-				log.Println(color.Ize(color.Yellow, "REGION block: "), header.NumberArray(), header.Hash())
-			case common.ZONE_CTX:
-				log.Println(color.Ize(color.Blue, "ZONE block  : "), header.NumberArray(), header.Hash())
 			}
 		}
 	}
