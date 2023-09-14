@@ -1,3 +1,5 @@
+PROGPOW_REPLACE_HEADER
+
 #ifndef MAX_SEARCH_RESULTS
 #define MAX_SEARCH_RESULTS 4U
 #endif
@@ -181,9 +183,10 @@ progpow_search(
         // initialize mix for all lanes
         fill_mix(hash_seed, lane_id, mix);
 
-        #pragma unroll 1
-        for (uint32_t l = 0; l < PROGPOW_CNT_DAG; l++)
-            progPowLoop(l, mix, g_dag, c_dag, hack_false);
+        #pragma unroll 2
+        for (uint32_t loop = 0; loop < PROGPOW_CNT_DAG; loop++) {
+            PROGPOW_REPLACE_MATH
+		}
 
 
         // Reduce mix data to a per-lane 32-bit digest

@@ -1,6 +1,7 @@
 #include "ProgPow.h"
 
 #include <sstream>
+#include <regex>
 
 #define rnd() (kiss99(rnd_state))
 #define mix_src()   ("mix[" + std::to_string(rnd() % PROGPOW_REGS) + "]")
@@ -14,7 +15,7 @@ inline void swap(uint32_t& a, uint32_t& b)
     b = t;
 }
 
-std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
+std::string ProgPow::getKern(std::string kernel_code, uint64_t prog_seed, kernel_t kern)
 {
     std::stringstream ret;
 
@@ -99,45 +100,16 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     {
         ret << "typedef struct __align__(16) {uint32_t s[PROGPOW_DAG_LOADS];} dag_t;\n";
         ret << "\n";
-        ret << "// Inner loop for prog_seed " << prog_seed << "\n";
-        ret << "__device__ __forceinline__ void progPowLoop(const uint32_t loop,\n";
-        ret << "        uint32_t mix[PROGPOW_REGS],\n";
-        ret << "        const dag_t *g_dag,\n";
-        ret << "        const uint32_t c_dag[PROGPOW_CACHE_WORDS],\n";
-        ret << "        const bool hack_false)\n";
     }
     else
     {
         ret << "typedef struct __attribute__ ((aligned (16))) {uint32_t s[PROGPOW_DAG_LOADS];} dag_t;\n";
         ret << "\n";
-        ret << "// Inner loop for prog_seed " << prog_seed << "\n";
-        ret << "inline void progPowLoop(const uint32_t loop,\n";
-        ret << "        volatile uint32_t mix_arg[PROGPOW_REGS],\n";
-        ret << "        __global const dag_t *g_dag,\n";
-        ret << "        __local const uint32_t c_dag[PROGPOW_CACHE_WORDS],\n";
-        ret << "        __local uint64_t share[GROUP_SHARE],\n";
-        ret << "        const bool hack_false)\n";
     }
-    ret << "{\n";
+    std::string kernel = std::regex_replace(kernel_code, std::regex("PROGPOW_REPLACE_HEADER"), ret.str());
+    ret.str(std::string());
 
-    ret << "dag_t data_dag;\n";
     ret << "uint32_t offset, data;\n";
-    // Work around AMD OpenCL compiler bug
-    // See https://github.com/gangnamtestnet/ethcoreminer/issues/16
-    if (kern == KERNEL_CL)
-    {
-        ret << "uint32_t mix[PROGPOW_REGS];\n";
-        ret << "for(uint32_t i=0; i<PROGPOW_REGS; i++)\n";
-        ret << "    mix[i] = mix_arg[i];\n";
-    }
-
-    if (kern == KERNEL_CUDA)
-        ret << "const uint32_t lane_id = threadIdx.x & (PROGPOW_LANES-1);\n";
-    else
-    {
-        ret << "const uint32_t lane_id = get_local_id(0) & (PROGPOW_LANES-1);\n";
-        ret << "const uint32_t group_id = get_local_id(0) / PROGPOW_LANES;\n";
-    }
 
     // Global memory access
     // lanes access sequential locations
@@ -149,13 +121,14 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
     else
     {
         ret << "if(lane_id == (loop % PROGPOW_LANES))\n";
-        ret << "    share[group_id] = mix[0];\n";
+        ret << "    share[0].uint32s[group_id] = mix[0];\n";
         ret << "barrier(CLK_LOCAL_MEM_FENCE);\n";
-        ret << "offset = share[group_id];\n";
+        ret << "offset = share[0].uint32s[group_id];\n";
     }
     ret << "offset %= PROGPOW_DAG_ELEMENTS;\n";
     ret << "offset = offset * PROGPOW_LANES + (lane_id ^ loop) % PROGPOW_LANES;\n";
-    ret << "data_dag = g_dag[offset];\n";
+    ret << "dag_t data_dag = g_dag[offset];\n";
+
     ret << "// hack to prevent compiler from reordering LD and usage\n";
     if (kern == KERNEL_CUDA)
         ret << "if (hack_false) __threadfence_block();\n";
@@ -208,16 +181,10 @@ std::string ProgPow::getKern(uint64_t prog_seed, kernel_t kern)
         uint32_t    r = rnd();
         ret << merge(dest, "data_dag.s["+std::to_string(i)+"]", r);
     }
-    // Work around AMD OpenCL compiler bug
-    if (kern == KERNEL_CL)
-    {
-        ret << "for(uint32_t i=0; i<PROGPOW_REGS; i++)\n";
-        ret << "    mix_arg[i] = mix[i];\n";
-    }
-    ret << "}\n";
     ret << "\n";
 
-    return ret.str();
+    kernel = std::regex_replace(kernel, std::regex("PROGPOW_REPLACE_MATH"), ret.str());
+    return kernel;
 }
 
 // Merge new data from b into the value in a
@@ -290,4 +257,29 @@ uint32_t ProgPow::kiss99(kiss99_t &st)
     st.jsr ^= (st.jsr << 5);
     st.jcong = 69069 * st.jcong + 1234567;
     return ((MWC^st.jcong) + st.jsr);
+}
+
+void ProgPow::calculate_fast_mod_data(uint32_t divisor, uint32_t& reciprocal, uint32_t& increment, uint32_t& shift)
+{
+    if ((divisor & (divisor - 1)) == 0) {
+        reciprocal = 1;
+        increment = 0;
+        shift = 31U - clz(divisor);
+    }
+    else {
+        shift = 63U - clz(divisor);
+        const uint64_t N = 1ULL << shift;
+        const uint64_t q = N / divisor;
+        const uint64_t r = N - q * divisor;
+        if (r * 2 < divisor)
+        {
+            reciprocal = static_cast<uint32_t>(q);
+            increment = 1;
+        }
+        else
+        {
+            reciprocal = static_cast<uint32_t>(q + 1);
+            increment = 0;
+        }
+    }
 }

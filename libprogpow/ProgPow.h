@@ -29,8 +29,9 @@ public:
         KERNEL_CL
     } kernel_t;
 
-    static std::string getKern(uint64_t seed, kernel_t kern);
 
+	static std::string getKern(std::string kernel_code, uint64_t seed, kernel_t kern);
+    static void calculate_fast_mod_data(uint32_t divisor, uint32_t& reciprocal, uint32_t& increment, uint32_t& shift);
 private:
     static std::string math(std::string d, std::string a, std::string b, uint32_t r);
     static std::string merge(std::string a, std::string b, uint32_t r);
@@ -43,4 +44,15 @@ private:
         uint32_t z, w, jsr, jcong;
     } kiss99_t;
     static uint32_t kiss99(kiss99_t &st);
+
+    static uint32_t clz(uint32_t a)
+    {
+#ifdef _MSC_VER
+        unsigned long index;
+        _BitScanReverse(&index, a);
+        return 31 - index;
+#else
+        return __builtin_clz(a);
+#endif
+    }
 };
