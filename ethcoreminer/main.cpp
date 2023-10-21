@@ -730,7 +730,7 @@ public:
 
         // Signal traps
 #if defined(__linux__) || defined(__APPLE__)
-        signal(SIGSEGV, MinerCLI::signalHandler);
+        #signal(SIGSEGV, MinerCLI::signalHandler);
 #endif
         signal(SIGINT, MinerCLI::signalHandler);
         signal(SIGTERM, MinerCLI::signalHandler);
