@@ -695,6 +695,16 @@ bool CLMiner::initDevice()
               << m_settings.globalWorkSize / m_settings.localWorkSize;
     }
 
+#ifndef __clang__
+        // Nvidia
+        if (!m_deviceDescriptor.clNvCompute.empty())
+        {
+            m_computeCapability =
+                m_deviceDescriptor.clNvComputeMajor * 10 + m_deviceDescriptor.clNvComputeMinor;
+            int maxregs = m_computeCapability >= 35 ? 72 : 63;
+            sprintf(m_options, "-cl-nv-maxrregcount=%d", maxregs);
+        }
+#endif
 
     return true;
 
@@ -726,18 +736,6 @@ bool CLMiner::initEpoch_internal()
     try
     {
         char options[256] = {0};
-#ifndef __clang__
-
-        // Nvidia
-        if (!m_deviceDescriptor.clNvCompute.empty())
-        {
-            m_computeCapability =
-                m_deviceDescriptor.clNvComputeMajor * 10 + m_deviceDescriptor.clNvComputeMinor;
-            int maxregs = m_computeCapability >= 35 ? 72 : 63;
-            sprintf(m_options, "-cl-nv-maxrregcount=%d", maxregs);
-        }
-
-#endif
 
         m_dagItems = m_epochContext.dagNumItems;
 
@@ -836,9 +834,15 @@ bool CLMiner::initEpoch_internal()
         // GPU DAG buffer to kernel
         m_searchKernel.setArg(2, *m_dag);
 
-        m_dagKernel.setArg(1, *m_light);
-        m_dagKernel.setArg(2, *m_dag);
+        uint32_t light_words4[4];
+        ProgPow::calculate_fast_mod_data(m_epochContext.lightNumItems, light_words4[0], light_words4[1], light_words4[2]);
+        light_words4[3] = m_epochContext.lightNumItems;
+
+        m_dagKernel.setArg(1, m_light[0]);
+        m_dagKernel.setArg(2, m_dag[0]);
         m_dagKernel.setArg(3, -1);
+        m_dagKernel.setArg(4, (uint32_t)(m_epochContext.dagSize / sizeof(ethash_hash512)));
+        m_dagKernel.setArg(5, light_words4);
 
         const uint32_t workItems = m_dagItems * 2;  // GPU computes partial 512-bit DAG items.
 
@@ -889,13 +893,10 @@ void CLMiner::asyncCompile()
 
 void CLMiner::compileKernel(uint64_t period_seed, cl::Program& program, cl::Kernel& searchKernel)
 {
-    std::string code = ProgPow::getKern(period_seed, ProgPow::KERNEL_CL);
-    code += string(CLMiner_kernel);
+    std::string code = ProgPow::getKern(CLMiner_kernel, period_seed, ProgPow::KERNEL_CL);
 
     addDefinition(code, "GROUP_SIZE", m_settings.localWorkSize);
     addDefinition(code, "ACCESSES", 64);
-    addDefinition(code, "LIGHT_WORDS", m_epochContext.lightNumItems);
-    addDefinition(code, "PROGPOW_DAG_BYTES", m_epochContext.dagSize);
     addDefinition(code, "PROGPOW_DAG_ELEMENTS", m_epochContext.dagNumItems / 2);
 
     addDefinition(code, "MAX_OUTPUTS", c_maxSearchResults);
