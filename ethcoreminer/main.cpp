@@ -130,6 +130,11 @@ public:
 #if defined(__linux__) || defined(__APPLE__)
 #define BACKTRACE_MAX_FRAMES 100
         case SIGSEGV:
+            cerr << "SIGSEGV encountered ...\n";
+            g_running = false;
+            g_shouldstop.notify_all();
+            break;
+            
             static bool in_handler = false;
             if (!in_handler)
             {
