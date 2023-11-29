@@ -404,18 +404,34 @@ void Farm::accountSolution(unsigned _minerIdx, SolutionAccountingEnum _accountin
 {
     if (_accounting == SolutionAccountingEnum::Accepted)
     {
+        m_telemetry.farm.solutions.accepted++;
+        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        m_telemetry.miners.at(_minerIdx).solutions.accepted++;
+        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Wasted)
     {
+        m_telemetry.farm.solutions.wasted++;
+        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        m_telemetry.miners.at(_minerIdx).solutions.wasted++;
+        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Rejected)
     {
+        m_telemetry.farm.solutions.rejected++;
+        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        m_telemetry.miners.at(_minerIdx).solutions.rejected++;
+        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
     if (_accounting == SolutionAccountingEnum::Failed)
     {
+        m_telemetry.farm.solutions.failed++;
+        m_telemetry.farm.solutions.tstamp = std::chrono::steady_clock::now();
+        m_telemetry.miners.at(_minerIdx).solutions.failed++;
+        m_telemetry.miners.at(_minerIdx).solutions.tstamp = std::chrono::steady_clock::now();
         return;
     }
 }
