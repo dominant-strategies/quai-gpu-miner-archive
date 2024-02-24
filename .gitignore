@@ -3,5 +3,4 @@
 bin/*
 build/*
 logs/
-config.yaml
 .idea
