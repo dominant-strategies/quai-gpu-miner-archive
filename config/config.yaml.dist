@@ -1,9 +1,3 @@
-# Connection details for proxy
-Proxy:  False
-ProxyURL: "127.0.0.1:8008"
-RewardAddress:  "0x0000000000000000000000000000000000000001"
-Password: "password"
-
 # Connection details for solo mining
 Location: [0,0]
 PrimeURL: "ws://127.0.0.1:8001"
