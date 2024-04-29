@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/big"
 
 	"os"
 	"strconv"
@@ -32,7 +33,9 @@ const (
 )
 
 var (
-	exit = make(chan bool)
+	exit     = make(chan bool)
+	big2e256 = new(big.Int).Exp(big.NewInt(2), big.NewInt(256), big.NewInt(0)) // 2^256
+
 )
 
 type Miner struct {
@@ -314,6 +317,18 @@ func (m *Miner) resultLoop() {
 	for {
 		select {
 		case header := <-m.resultCh:
+			// check if the mined object is a workshare or a block
+			target := new(big.Int).Div(big2e256, header.Difficulty())
+			powHash, err := m.engine.ComputePowHash(header.WorkObjectHeader())
+			if err != nil {
+				log.Println("Error computing pow hash: ", err)
+				continue
+			}
+			if new(big.Int).SetBytes(powHash.Bytes()).Cmp(target) > 0 {
+				log.Println("Mined a work share", header.Hash())
+				m.sliceClients[common.ZONE_CTX].ReceiveWorkShare(context.Background(), header.WorkObjectHeader())
+				continue
+			}
 			_, order, err := m.engine.CalcOrder(header)
 			if err != nil {
 				log.Println("Error calculating order: ", err)
