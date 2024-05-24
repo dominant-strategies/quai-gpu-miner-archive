@@ -67,6 +67,8 @@ type Miner struct {
 
 	// Tracks the latest JSON RPC ID to send to the proxy or node.
 	latestId uint64
+
+	stopCh chan struct{}
 }
 
 // Clients for RPC connection to the Prime, region, & zone ports belonging to the
@@ -159,7 +161,6 @@ func main() {
 	m := &Miner{
 		config:            config,
 		engine:            engine,
-		header:            &types.WorkObject{},
 		updateCh:          make(chan *types.WorkObject, resultQueueSize),
 		resultCh:          make(chan *types.WorkObject, resultQueueSize),
 		previousNumber:    [common.HierarchyDepth]uint64{0, 0, 0},
@@ -249,34 +250,30 @@ func (m *Miner) fetchPendingHeaderNode() {
 	}
 }
 
+func (m *Miner) interrupt() {
+	if m.stopCh != nil {
+		close(m.stopCh)
+		m.stopCh = nil
+	}
+}
+
 // miningLoop iterates on a new header and passes the result to m.resultCh. The result is called within the method.
 func (m *Miner) miningLoop() error {
-	var (
-		stopCh chan struct{}
-	)
-	// interrupt aborts the in-flight sealing task.
-	interrupt := func() {
-		if stopCh != nil {
-			close(stopCh)
-			stopCh = nil
-		}
-	}
-	var header *types.WorkObject
 	for {
 		select {
 		case newHead := <-m.updateCh:
 
-			if header != nil && newHead.SealHash() == header.SealHash() {
+			if m.header != nil && newHead.SealHash() == m.header.SealHash() {
 				continue
 			}
-			header := newHead
+			m.header = newHead
 			m.miningWorkRefresh.Reset(miningWorkRefreshRate)
 			// Mine the header here
 			// Return the valid header with proper nonce and mix digest
 			// Interrupt previous sealing operation
-			interrupt()
-			stopCh = make(chan struct{})
-			number := [common.HierarchyDepth]uint64{header.NumberU64(common.PRIME_CTX), header.NumberU64(common.REGION_CTX), header.NumberU64(common.ZONE_CTX)}
+			m.interrupt()
+			m.stopCh = make(chan struct{})
+			number := [common.HierarchyDepth]uint64{m.header.NumberU64(common.PRIME_CTX), m.header.NumberU64(common.REGION_CTX), m.header.NumberU64(common.ZONE_CTX)}
 			primeStr := fmt.Sprint(number[common.PRIME_CTX])
 			regionStr := fmt.Sprint(number[common.REGION_CTX])
 			zoneStr := fmt.Sprint(number[common.ZONE_CTX])
@@ -291,10 +288,10 @@ func (m *Miner) miningLoop() error {
 				} else if number[common.ZONE_CTX] != m.previousNumber[common.ZONE_CTX] {
 					zoneStr = color.Ize(color.Blue, zoneStr)
 				}
-				log.Println("Mining Block: ", fmt.Sprintf("[%s %s %s]", primeStr, regionStr, zoneStr), "location", header.Location(), "difficulty", header.Difficulty())
+				log.Println("Mining Block: ", fmt.Sprintf("[%s %s %s]", primeStr, regionStr, zoneStr), "location", m.header.Location(), "difficulty", m.header.Difficulty())
 			}
-			m.previousNumber = [common.HierarchyDepth]uint64{header.NumberU64(common.PRIME_CTX), header.NumberU64(common.REGION_CTX), header.NumberU64(common.ZONE_CTX)}
-			if err := m.engine.Seal(header, m.resultCh, stopCh); err != nil {
+			m.previousNumber = [common.HierarchyDepth]uint64{m.header.NumberU64(common.PRIME_CTX), m.header.NumberU64(common.REGION_CTX), m.header.NumberU64(common.ZONE_CTX)}
+			if err := m.engine.Seal(m.header, m.resultCh, m.stopCh); err != nil {
 				log.Println("Block sealing failed", "err", err)
 			}
 		default:
@@ -326,6 +323,11 @@ func (m *Miner) resultLoop() {
 			}
 			if new(big.Int).SetBytes(powHash.Bytes()).Cmp(target) > 0 {
 				log.Println("Mined a work share", header.Hash())
+				// Restart the Mining work
+				m.stopCh = make(chan struct{})
+				if err := m.engine.Seal(m.header, m.resultCh, m.stopCh); err != nil {
+					log.Println("Block sealing failed", "err", err)
+				}
 				m.sliceClients[common.ZONE_CTX].ReceiveWorkShare(context.Background(), header.WorkObjectHeader())
 				continue
 			}
